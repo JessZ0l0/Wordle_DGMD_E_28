@@ -216,7 +216,7 @@
                 {
 
                 }
-                console.log(this.guesses);
+                
             }
         }
         
@@ -337,9 +337,9 @@
 
             //toggle clicking the checkbox to show the solution word for that session of wordle
             controller.debugMode.addEventListener( "change", function(e){
-                console.log("Checkbox toggled. Checked:", controller.debugMode.checked);
+                //console.log("Checkbox toggled. Checked:", controller.debugMode.checked);
                 if(controller.debugMode.checked) {
-                    console.log("Checkbox toggled. Checked:", controller.debugMode.checked);
+                    //console.log("Checkbox toggled. Checked:", controller.debugMode.checked);
                     controller.solutionWord.innerText = controller.targetWord.word;
                 } else {
                     solutionWord.innerText = "";
@@ -357,7 +357,7 @@
                 {   
                     data = JSON.parse(data);
                     controller.targetWord = new Word(data[0].toUpperCase(), "solution")
-                    console.log(controller.targetWord);
+                    //console.log(controller.targetWord);
                 })
                     
 
@@ -375,10 +375,10 @@
             const word =document.getElementById("word");
 
             //const debugMode = document.getElementById("debugMode");
-            console.log("debugMode element:", debugMode);
+            //console.log("debugMode element:", debugMode);
 
             //const solutionWord = document.getElementById("solutionWord");
-            console.log("solutionWord div:", solutionWord);
+            //console.log("solutionWord div:", solutionWord);
 
             function logSubmit(event)
             {
@@ -402,7 +402,7 @@
                                 return;
                             }
 
-                            console.log(userInput.toUpperCase().trim()); //case insensitive
+                            //console.log(userInput.toUpperCase().trim()); //case insensitive
                                 
                             //if statement to check that word is infact 5 letters long
                             //and if hte word_arr lenght is zero OR the userInput is the same and the latest word input 
@@ -414,8 +414,8 @@
                                 alert("hello!");
                                 controller.word_arr.push(new Word(userInput, "unknown"));  //Updates word_arr
                                 let guessedWord = controller.word_arr.at(-1).letters;
-                                console.log(guessedWord);
-                                console.log(controller.word_arr.at(-1).word);
+                                //console.log(guessedWord);
+                                //console.log(controller.word_arr.at(-1).word);
                                 
                                 //create parents div for each word
                                 const parentDiv = document.createElement("div");
@@ -482,7 +482,7 @@
                                         playAgainButton.style.display = "block"; //show play again button if the player wins the game
                                 }
         
-                                console.log(guessedWord.every(letter => letter.status === "correct"));
+                                //console.log(guessedWord.every(letter => letter.status === "correct"));
 
                                 controller.countInstance.incrementGuesses(1); //increment before running sad face block
                                 if ((controller.countInstance.guesses) === 6 && !isWin)
@@ -498,7 +498,7 @@
 
                                 }
 
-                                console.log(guessedWord);
+                                //console.log(guessedWord);
                                 
 
 
@@ -508,9 +508,9 @@
                             } 
 
                         
-                            console.log(controller.word_arr);
-                            console.log(userInput);
-                            console.log(controller.word_arr);
+                            //console.log(controller.word_arr);
+                            //console.log(userInput);
+                            //console.log(controller.word_arr);
                             form.reset(); //clears form upon submission
                         }
                         else
