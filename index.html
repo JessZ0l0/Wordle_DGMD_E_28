@@ -110,8 +110,13 @@
             font-size: 24px;
             margin-top: 20px;
         }
+        #playAgainButton{
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
 
-        #sadContent, #playAgain {
+        #sadContent {
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -545,7 +550,9 @@
         </div>
     </div>
     <div id="wordList"></div>
-    <button id="playAgain" style="display: none;">Play Again</button>
+    <div id="playAgainButton">
+        <button id="playAgain" style="display: none;">Play Again</button>
+    </div>
     <div id= "letterBank"></div>
     <!--sad face overlay -->
     <div id="sadOverlay" style="display: none;">
