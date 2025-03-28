@@ -1,6 +1,9 @@
 # Wordle_DGMD_E_28
 Wordle game for HES DGMD_E_28
 
+# URL:
+https://jessz0l0.github.io/Wordle_DGMD_E_28/
+
 # Questions Answered:
 ## API Used: 
 I used the Random Word API to generate a random five-letter word for each game because it’s simple, free, and returns clean JSON data ideal for this use case. I also used DictionaryAPI.dev to verify user input was a valid English word. There’s still an issue I need to fix in case the word from the Random Word API isn’t recognized by DictionaryAPI.dev. It’s a future problem to address in order to improve smooth functionality of the game.
