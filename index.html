@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wordle Game</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        h1{
+            text-align: center;
+        }
+        #debug, #debugMode{
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+        }
+        #wordEntry{
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #wordList{
+            display: flex;
+            flex-direction: column;
+            margin-left: auto;
+            margin-right: auto;
+            width: 700px;
+            height: 450px;
+            display: grid;
+            grid-template-rows: repeat(6, 1fr);
+
+        }
+        .word{
+            gap: 8px;
+            width: auto;
+            height: auto;
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            text-align: center;
+            align-items: center;
+            font-size: 35px;
+            font-weight: bold;
+            text-transform: uppercase;
+            height: 75px;
+            /* border: 1px solid black; */
+        }
+        .letter{
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid black;
+            align-items: center;
+            width: 50px;
+            height: 50px;
+        }
+        #letterBank{
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 5px;
+            margin-top: 15px;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        #correct, .correct{
+            background-color: green;
+        }
+        #present, .present{
+            background-color: yellow;
+        }
+        #absent, .absent{
+            background-color: gray;
+        }
+        #solutionWord {
+            color: red;
+            font-size: 18px;
+            text-align: center;
+            margin-top: 10px;
+            text-transform: uppercase;
+            margin: 0;
+            padding: 0;
+        }
+        .debug{
+            margin-top: 20px;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px; /* adds space between checkbox, label, and solution word */
+        }
+        #sadOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            color: white;
+            font-size: 100px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            z-index: 9999;
+        }
+
+        #sadContent span {
+            font-size: 24px;
+            margin-top: 20px;
+        }
+
+        #sadContent {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center; /* <-- This centers both the emoji and solution word */
+            text-align: center;
+        }
+
+        /*MEDIA QUERIES*/
+        /* Styles for screens 700px wide or less */
+        @media screen and (max-width: 700px) {
+            #wordList {
+                width: 100%;
+                height: auto;
+            }
+
+            .word {
+                font-size: 30px;
+                height: 60px;
+            }
+
+            .letter {
+                width: 40px;
+                height: 40px;
+            }
+            #letterBank{
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 5px;
+            margin-top: 15px;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+            }
+        }
+
+        /* Styles for screens 600px wide or less */
+        @media screen and (max-width: 600px) {
+            #wordList {
+                width: 100%;
+                height: auto;
+            }
+
+            .word {
+                font-size: 25px;
+                height: 50px;
+            }
+
+            .letter {
+                width: 35px;
+                height: 35px;
+            }
+            #letterBank{
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 5px;
+            margin-top: 15px;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+            }
+        }
+
+    </style>
+</head>
+<body>
+    <script>
+        //object oreinted coding
+        //class for word, deconstructing word to letters and the status of the each letter
+        class Word{
+            constructor(word, status)
+            {
+                this.word = word;
+                this.status = status;
+                this.letters = this.splitWord(); //method to split word into letters
+            }
+            splitWord()
+            {
+                return this.word.split("").map((letters) => ({char:letters, status:"unknown"}));
+
+            }
+        }
+
+        //number of guesses in the game allowed
+        class Game
+        {
+            constructor(guesses)
+            {
+                this.guesses = 0;
+
+            }
+
+            //incrementing the guessing 
+            incrementGuesses()
+            {
+                if (this.guesses <= 6)
+                {
+                    this.guesses += 1;
+                    alert("guess");
+                } else
+                {
+
+                }
+                console.log(this.guesses);
+            }
+        }
+        
+        //the letter bank where every letter is shown at the base and also updates styling with submission of each guess
+        class LetterBank
+        {
+            constructor(letters, status)
+            {
+                this.letters = { A: "unknown", B: "unknown", C:"unknown", D:"unknown", E:"unknown", F:"unknown", G:"unknown", H:"unknown",
+                    I:"unknown", J:"unknown", K:"unknown", L:"unknown", M:"unknown", N:"unknown", O:"unknown", P:"unknown", Q:"unknown",
+                    R:"unknown", S:"unknown", T:"unknown", U:"unknown", V:"unknown", W:"unknown", X:"unknown", Y:"unknown", Z:"unknown"
+                }
+                this.status = status;
+            }
+            render(containerElement)
+            {
+                Object.keys(this.letters).forEach(letter => { //object.keys gives you an array of all the keys
+                    const div = document.createElement("div");
+                    div.classList.add("letter-indicator");
+                    div.id = "bank_" + letter;
+                    div.textContent = letter;
+                    containerElement.appendChild(div);
+                });
+            }
+            updateStatus(letter, status)
+            {
+                const bankLetter = document.getElementById("bank_" + letter);
+
+                if (status === "correct") {
+                    bankLetter.classList.add("correct");
+                } else if (status === "present") {
+                
+                // Only update if it’s not already marked correct
+                if (!bankLetter.classList.contains("correct")) {
+                    bankLetter.classList.add("present");
+                }
+                } else {
+                    if (
+                        !bankLetter.classList.contains("correct") &&
+                        !bankLetter.classList.contains("present")
+                    ) {
+                        bankLetter.classList.add("absent");
+                    }
+                }
+
+                this.letters[letter] = status;
+            }
+            
+        }
+        //class to reset to control game state
+        class GameController
+        {
+            constructor(){
+                this.wordList = document.getElementById("wordList");
+                this.form = document.getElementById("wordEntry");
+                this.solutionWord = document.getElementById("solutionWord");
+                this.debugMode = document.getElementById("debugMode");
+                this.letterBankInstance = new LetterBank();
+
+                this.countInstance = new Game();
+                this.word_arr = [];
+            }
+
+            //logic to reset the game method inside class game controller
+            resetGame()
+            {
+                //reset game logic 
+                this.wordList.innerHTML = "";
+                this.word_arr = [];
+                this.countInstance.guesses = 0;
+                this.form.reset(); //empties form input
+                this.solutionWord.innerText = "";
+                document.getElementById("playAgain").style.display = "none";
+
+                Object.keys(this.letterBankInstance.letters).forEach(letter => { //object.keys gives you an array of all the keys
+
+                    const div = document.getElementById("bank_" + letter); //remake the ids
+                    div.classList.remove("correct", "present", "absent"); //remove classes
+                    this.letterBankInstance.letters[letter] = "unknown"; //update status's of all letters to unknown 
+                });
+
+                fetch("https://random-word-api.herokuapp.com/word?length=5&lang=en", {mode: 'cors'})
+                //resolves
+                .then(response => response.text())
+                .then(data => 
+                {   
+                    data = JSON.parse(data);
+                    this.targetWord = new Word(data[0].toUpperCase(), "solution")
+
+                })
+                //reject
+                .catch(error => {
+                    console.error("There was an error:", error);
+                });
+
+
+
+            }
+
+        }
+
+        //onload function
+        window.onload = function() 
+        {
+            
+            //all variables defined
+            const controller = new GameController(); //define an instance of the class gamecontroller in a variable to access properties inside that class's constructor
+            const bank = document.getElementById( "letterBank");
+            const playAgainButton = document.getElementById("playAgain");
+            let letterBankInstance = new LetterBank();
+            letterBankInstance.render(document.getElementById( "letterBank"));
+            controller.resetGame(); 
+
+
+            playAgainButton.addEventListener("click", () => {
+                controller.resetGame();
+            });
+
+            //toggle clicking the checkbox to show the solution word for that session of wordle
+            controller.debugMode.addEventListener( "change", function(e){
+                console.log("Checkbox toggled. Checked:", controller.debugMode.checked);
+                if(controller.debugMode.checked) {
+                    console.log("Checkbox toggled. Checked:", controller.debugMode.checked);
+                    controller.solutionWord.innerText = controller.targetWord.word;
+                } else {
+                    solutionWord.innerText = "";
+                }
+            })
+
+
+            // let userInput = word.value.toUpperCase().trim(); //a form store value in value properties 
+            //check if the entered word is infact a word
+            //console.log("debugMode:", debugMode);
+            fetch("https://random-word-api.herokuapp.com/word?length=5&lang=en", {mode: 'cors'})
+                //resolves
+                .then(response => response.text())
+                .then(data => 
+                {   
+                    data = JSON.parse(data);
+                    controller.targetWord = new Word(data[0].toUpperCase(), "solution")
+                    console.log(controller.targetWord);
+                })
+                    
+
+                //reject
+                .catch(error => {
+                    console.error("There was an error:", error);
+                });
+
+            // Your submission will be judged on your ability 
+            // to leverage Javascript objects within your design 
+            // and to create an intuitive UI.
+            // let word_arr =[];
+            const form = document.getElementById("wordEntry");
+            const wordList = document.getElementById("wordList");
+            const word =document.getElementById("word");
+
+            //const debugMode = document.getElementById("debugMode");
+            console.log("debugMode element:", debugMode);
+
+            //const solutionWord = document.getElementById("solutionWord");
+            console.log("solutionWord div:", solutionWord);
+
+            function logSubmit(event)
+            {
+                event.preventDefault();
+                let userInput = word.value.toUpperCase().trim(); //a form store value in value properties 
+
+
+                //check if the entered word is infact a word
+                fetch(("https://api.dictionaryapi.dev/api/v2/entries/en/" + userInput), {mode: 'cors'})
+                    .then(response => response.text())
+                    .then( data => 
+                    {  
+                        data = JSON.parse(data)
+                    
+                        if (Array.isArray(data))
+                        {
+                            //firstly check the number of gueses and if over 6 reset the game
+                            if ((controller.countInstance.guesses >= 6) || (word.value.trim() === ""))
+                            {
+                                playAgainButton.style.display = "block"; //changes style to display the button under word list                            
+                                return;
+                            }
+
+                            console.log(userInput.toUpperCase().trim()); //case insensitive
+                                
+                            //if statement to check that word is infact 5 letters long
+                            //and if hte word_arr lenght is zero OR the userInput is the same and the latest word input 
+                            //then it prevents duplicate words being entered 
+                            if (userInput.length === 5 &&
+                                (controller.word_arr.length === 0 || userInput !== controller.word_arr.at(-1).word)
+                            )
+                            {
+                                alert("hello!");
+                                controller.word_arr.push(new Word(userInput, "unknown"));  //Updates word_arr
+                                let guessedWord = controller.word_arr.at(-1).letters;
+                                console.log(guessedWord);
+                                console.log(controller.word_arr.at(-1).word);
+                                
+                                //create parents div for each word
+                                const parentDiv = document.createElement("div");
+                                parentDiv.setAttribute("class","word");
+                                wordList.appendChild(parentDiv);
+                                
+                                const letterDivs = guessedWord.map((letter, index) => //.map creates new array
+                                {
+                                    const newDiv = document.createElement("div");
+                                    newDiv.setAttribute("class", "letter");
+                                    newDiv.textContent = letter.char;
+                                    parentDiv.appendChild(newDiv);
+                                    return newDiv;
+                                });
+
+                                //object to store the frequency of each letter in the solution
+                                let targetLetterCounts = {}; //object array
+                                controller.targetWord.letters.forEach(letterObj => {
+                                    let letter = letterObj.char;
+                                    targetLetterCounts[letter] = (targetLetterCounts[letter] || 0) + 1;
+                                });
+                                    
+                                //if the letter in the guessed word at said position is present at the same position in the target word it is correct
+                                guessedWord.forEach((letter, index) =>{
+                                    if (letter.char === controller.targetWord.letters[index].char){
+                                        letter.status = "correct";
+                                        
+                                        targetLetterCounts[letter.char]--;
+                                        letterDivs[index].style.backgroundColor = "green";
+                                        letterBankInstance.updateStatus(letter.char, letter.status);
+                                    }
+                                });                                
+
+                                //
+                                guessedWord.forEach((letter, index) =>{
+                                    if  ( letter.status === "unknown" && targetLetterCounts[letter.char] > 0){
+                                        letter.status = "present";
+
+                                        targetLetterCounts[letter.char]--;
+                                        letterDivs[index].style.backgroundColor = "yellow";
+                                        letterBankInstance.updateStatus(letter.char, letter.status);
+                                    }
+                                });
+
+                                //check if the status is unknown and if the count is zero because if so than change the styling and
+                                //letter status accordingly
+                                guessedWord.forEach((letter, index) => {
+                                    if (letter.status === "unknown" && targetLetterCounts[letter.char] === 0) {
+                                        letter.status = "absent";
+                                        letterDivs[index].style.backgroundColor = "gray";
+                                        letterBankInstance.updateStatus(letter.char, letter.status);
+                                    }
+                                });
+
+                                //provides confetti when the user guesses the correct word
+                                const isWin = guessedWord.every(letter => letter.status === "correct");
+                                if (isWin){
+                                    confetti({
+                                        particleCount: 100,
+                                        spread: 70,
+                                        origin: { y: 0.6 }
+                                        });
+
+                                        playAgainButton.style.display = "block"; //show play again button if the player wins the game
+                                }
+        
+                                console.log(guessedWord.every(letter => letter.status === "correct"));
+
+                                controller.countInstance.incrementGuesses(1); //increment before running sad face block
+                                if ((controller.countInstance.guesses) === 6 && !isWin)
+                                {
+                                    document.getElementById("sadOverlay").style.display = "flex";
+                                    document.getElementById("showSolution").innerText = ("The word was: " + controller.targetWord.word);
+                                    //document.getElementById("playAgain").style.display = "block";
+
+                                    setTimeout(() => { //only show sad face for timeframe so that the perosn can reset game and replay as needed/wanted
+                                        document.getElementById("sadOverlay").style.display = "none";
+                                        document.getElementById("playAgain").style.display = "block";
+                                    }, 3000);
+
+                                }
+
+                                console.log(guessedWord);
+                                
+
+
+                            }
+                            else{
+                                alert("NOT lenght 5 or already entered word");
+                            } 
+
+                        
+                            console.log(controller.word_arr);
+                            console.log(userInput);
+                            console.log(controller.word_arr);
+                            form.reset(); //clears form upon submission
+                        }
+                        else
+                        {
+                            alert("not real word");
+                        }
+
+                
+                }) 
+                .catch(error => {
+                    console.error("Dictionary API error:", error);
+                }); 
+            }
+                
+            // const targetWord = new Word("GRAPE", "solution");
+            form.addEventListener("submit", logSubmit);
+        }
+    </script>
+    <h1>Wordle Game</h1>
+    <div id="form-area">
+        <form id="wordEntry">
+            <label>Word:
+            <input type="text" name="word" id="word">
+            </label>
+            <br /><br />
+            <button type="submit">Submit</button>
+        </form>
+        <div class="debug">
+            <input type="checkbox" id="debugMode" name="debug" />
+            <label for="debugMode">Debug Mode</label>
+            <span id="solutionWord"></span>
+        </div>
+    </div>
+    <div id="wordList"></div>
+    <button id="playAgain" style="display: none;">Play Again</button>
+    <div id= "letterBank"></div>
+    <!--sad face overlay -->
+    <div id="sadOverlay" style="display: none;">
+        <div id="sadContent">😢<br><span id="showSolution"></span></div>
+    </div>    
+</body>
+</html>
